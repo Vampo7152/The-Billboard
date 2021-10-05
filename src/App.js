@@ -7,7 +7,7 @@ import theBillboard from "./utils/TheBillboard.json";
 const TWITTER_HANDLE = "JoydeepSingha7";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const CONTRACT_ADDRESS = "0x369f8C576581943927e617Fb2d2D9481ECD9c3b0";
-const OPENSEA_LINK = `https://opensea.io/assets/${CONTRACT_ADDRESS}/1`;
+const OPENSEA_LINK = `https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/1`;
 const NETWORK = "homestead";
 
 const App = () => {
