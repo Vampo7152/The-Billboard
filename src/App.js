@@ -4,9 +4,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import { ethers } from "ethers";
 import theBillboard from "./utils/TheBillboard.json";
 
-const TWITTER_HANDLE = "Kagweshi";
+const TWITTER_HANDLE = "Kagweishi";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-const CONTRACT_ADDRESS = "0xC0aaf469982A427D46ef5770478fF0F9F520Fc8c";
+const CONTRACT_ADDRESS = "0xc7Cac48F81e7122831d4A53A194D52Ab3AA2dE2D";
 const OPENSEA_LINK = `https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/1`;
 const NETWORK = "homestead";
 
