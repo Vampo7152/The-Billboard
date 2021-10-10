@@ -6,7 +6,7 @@ import theBillboard from "./utils/TheBillboard.json";
 
 const TWITTER_HANDLE = "Kagweishi";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-const CONTRACT_ADDRESS = "0xc7Cac48F81e7122831d4A53A194D52Ab3AA2dE2D";
+const CONTRACT_ADDRESS = "0xA748d13201C646dce206982D8b07a15e905586BF";
 const OPENSEA_LINK = `https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/1`;
 const NETWORK = "homestead";
 
