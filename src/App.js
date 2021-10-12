@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { ethers } from "ethers";
 import theBillboard from "./utils/TheBillboard.json";
 
-const TWITTER_HANDLE = "Kagweishi";
+const TWITTER_HANDLE = "Umang_veerma";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const CONTRACT_ADDRESS = "0xA748d13201C646dce206982D8b07a15e905586BF";
 const OPENSEA_LINK = `https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/1`;
