@@ -8,16 +8,13 @@ export default function WalletModal({
   handleClose,
 }) {
   return (
-    <Modal show={show} onHide={handleClose} centered>
+    <Modal style={{ color: "black" }} show={show} onHide={handleClose} centered>
       <Modal.Header closeButton>
         <Modal.Title>Connect Wallet</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
-        <div
-          style={{ color: "black" }}
-          className="d-flex align-items-center justify-content-around"
-        >
+        <div className="d-flex align-items-center justify-content-around">
           <div
             className="d-flex flex-column align-items-center pointer"
             onClick={metaClick}
