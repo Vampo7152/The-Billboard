@@ -12,6 +12,17 @@ const connector = new WalletConnect({
   qrcodeModal: QRCodeModal,
 });
 
+//UNCOMMENT THIS FOR TESTING IT WILL ASK YOU TO CONNECT EACH TIME YOU REFRESH PAGE
+// try {
+//   connector
+//     .killSession()
+//     .catch(() => {})
+//     .finally(() => {
+//       connector.createSession();
+//     });
+// } catch {}
+
+//COMMENT THIS IF YOU HAVE UNCOMMENTED THE ABOVE CODE
 // Check if connection is already established
 if (!connector.connected) {
   // create new session
@@ -43,8 +54,6 @@ connector.on("disconnect", (error, payload) => {
 
   // Delete connector
 });
-
-
 
 const TWITTER_HANDLE = "Umang_veerma";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
