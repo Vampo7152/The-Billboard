@@ -14,7 +14,10 @@ export default function WalletModal({
       </Modal.Header>
 
       <Modal.Body>
-        <div className="d-flex align-items-center justify-content-around">
+        <div
+          style={{ color: "black" }}
+          className="d-flex align-items-center justify-content-around"
+        >
           <div
             className="d-flex flex-column align-items-center pointer"
             onClick={metaClick}
