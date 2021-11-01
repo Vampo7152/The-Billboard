@@ -1,3 +1,4 @@
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/App.css";
 import twitterLogo from "./assets/twitter-logo.svg";
 import React, { useEffect, useState, useCallback } from "react";
@@ -5,6 +6,7 @@ import { ethers } from "ethers";
 import theBillboard from "./utils/TheBillboard.json";
 import WalletConnect from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/qrcode-modal";
+import WalletModal from "./Components/WalletModal";
 
 // Create a connector
 const connector = new WalletConnect({
@@ -24,7 +26,6 @@ const connector = new WalletConnect({
 
 const connectWithWalletConnect = () => {
   if (!connector.connected) {
-    // create new session
     connector.createSession();
   }
 };
@@ -47,6 +48,10 @@ const App = () => {
   const [pastBillboards, setPastBillboards] = useState([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
   useEffect(() => {
     if (connector.accounts[0]) {
@@ -61,6 +66,7 @@ const App = () => {
           console.log(accounts, chainId);
           if (accounts[0]) {
             setCurrentAccount(accounts[0]);
+            handleClose();
           }
         }
       });
@@ -209,6 +215,7 @@ const App = () => {
 
       console.log("Connected", accounts[0]);
       setCurrentAccount(accounts[0]);
+      handleClose();
     } catch (error) {
       console.log(error);
     }
@@ -248,21 +255,9 @@ const App = () => {
   }, []);
 
   const renderNotConnectedContainer = () => (
-    <div>
-      <button
-        onClick={connectWallet}
-        className="cta-button connect-wallet-button"
-      >
-        Connect MetaMask to Update
-      </button>
-      <br />
-      <button
-        onClick={connectWithWalletConnect}
-        className="cta-button connect-wallet-button"
-      >
-        Connect with WalletConnect to Update
-      </button>
-    </div>
+    <button onClick={handleShow} className="cta-button connect-wallet-button">
+      Connect Wallet to Update
+    </button>
   );
 
   const renderBillboard = () => {
@@ -496,6 +491,12 @@ const App = () => {
           >{`Built with ❤️ by @${TWITTER_HANDLE}`}</a>
         </div>
       </div>
+      <WalletModal
+        metaClick={connectWallet}
+        walletConnectClick={connectWithWalletConnect}
+        show={show}
+        handleClose={handleClose}
+      />
     </div>
   );
 };
