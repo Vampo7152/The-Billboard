@@ -22,38 +22,17 @@ const connector = new WalletConnect({
 //     });
 // } catch {}
 
+const connectWithWalletConnect = () => {
+  if (!connector.connected) {
+    // create new session
+    connector.createSession();
+  }
+};
+
 //COMMENT THIS IF YOU HAVE UNCOMMENTED THE ABOVE CODE
 // Check if connection is already established
-if (!connector.connected) {
-  // create new session
-  connector.createSession();
-}
 
 // Subscribe to connection events
-connector.on("connect", (error, payload) => {
-  if (error) {
-    throw error;
-  }
-
-  // Get provided accounts and chainId
-});
-
-connector.on("session_update", (error, payload) => {
-  if (error) {
-    throw error;
-  }
-
-  // Get updated accounts and chainId
-  const { accounts, chainId } = payload.params[0];
-});
-
-connector.on("disconnect", (error, payload) => {
-  if (error) {
-    throw error;
-  }
-
-  // Delete connector
-});
 
 const TWITTER_HANDLE = "Umang_veerma";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
@@ -68,6 +47,45 @@ const App = () => {
   const [pastBillboards, setPastBillboards] = useState([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (connector.accounts[0]) {
+      console.log(connector.accounts);
+      setCurrentAccount(connector.accounts[0]);
+    } else {
+      connector.on("connect", (error, payload) => {
+        if (error) {
+          throw error;
+        } else {
+          const { accounts, chainId } = payload.params[0];
+          console.log(accounts, chainId);
+          if (accounts[0]) {
+            setCurrentAccount(accounts[0]);
+          }
+        }
+      });
+
+      connector.on("session_update", (error, payload) => {
+        if (error) {
+          throw error;
+        }
+        const { accounts, chainId } = payload.params[0];
+        console.log(accounts, chainId);
+        if (accounts[0]) {
+          setCurrentAccount(accounts[0]);
+        }
+      });
+
+      connector.on("disconnect", (error, payload) => {
+        if (error) {
+          throw error;
+        } else {
+          console.log("disconnected", payload);
+          setCurrentAccount("");
+        }
+      });
+    }
+  }, []);
 
   const decodeFromBase64 = (encoded) => {
     // Going backwards: from bytestream, to percent-encoding, to original string.
@@ -230,12 +248,21 @@ const App = () => {
   }, []);
 
   const renderNotConnectedContainer = () => (
-    <button
-      onClick={connectWallet}
-      className="cta-button connect-wallet-button"
-    >
-      Connect MetaMask to Update
-    </button>
+    <div>
+      <button
+        onClick={connectWallet}
+        className="cta-button connect-wallet-button"
+      >
+        Connect MetaMask to Update
+      </button>
+      <br />
+      <button
+        onClick={connectWithWalletConnect}
+        className="cta-button connect-wallet-button"
+      >
+        Connect with WalletConnect to Update
+      </button>
+    </div>
   );
 
   const renderBillboard = () => {

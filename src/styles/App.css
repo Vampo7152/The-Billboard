@@ -46,6 +46,7 @@
   font-size: 16px;
   font-weight: bold;
   color: white;
+  margin: 0.5rem 0;
 }
 
 .connect-wallet-button {
@@ -122,4 +123,8 @@
   100% {
     background-position: 0% 50%;
   }
+}
+
+.walletconnect-qrcode__image {
+  width: calc(100% - 100px) !important;
 }
