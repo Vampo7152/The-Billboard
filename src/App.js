@@ -7,6 +7,7 @@ import theBillboard from "./utils/TheBillboard.json";
 import WalletConnect from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/qrcode-modal";
 import WalletModal from "./Components/WalletModal";
+import WalletConnectProvider from "@walletconnect/web3-provider";
 
 // Create a connector
 const connector = new WalletConnect({
@@ -14,26 +15,22 @@ const connector = new WalletConnect({
   qrcodeModal: QRCodeModal,
 });
 
-//UNCOMMENT THIS FOR TESTING IT WILL ASK YOU TO CONNECT EACH TIME YOU REFRESH PAGE
-// try {
-//   connector
-//     .killSession()
-//     .catch(() => {})
-//     .finally(() => {
-//       connector.createSession();
-//     });
-// } catch {}
-
 const connectWithWalletConnect = () => {
   if (!connector.connected) {
     connector.createSession();
   }
 };
 
-//COMMENT THIS IF YOU HAVE UNCOMMENTED THE ABOVE CODE
-// Check if connection is already established
+const wProvider = new WalletConnectProvider({
+  rpc: {
+    4: "https://rinkeby.infura.io/v3/901bfc6e5e0042589b3e6d416993bb43",
+  },
+});
 
-// Subscribe to connection events
+const constants = {
+  METAMASK: "metamask",
+  WALLET_CONNECT: "walletconnect",
+};
 
 const TWITTER_HANDLE = "Umang_veerma";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
@@ -49,6 +46,8 @@ const App = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const [wProviderEnabled, setWProviderEnabled] = useState(false);
+  const [walletType, setWalletType] = useState(""); //metamask or walletconnect
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -57,6 +56,7 @@ const App = () => {
     if (connector.accounts[0]) {
       console.log(connector.accounts);
       setCurrentAccount(connector.accounts[0]);
+      setWalletType(constants.WALLET_CONNECT);
     } else {
       connector.on("connect", (error, payload) => {
         if (error) {
@@ -66,8 +66,19 @@ const App = () => {
           console.log(accounts, chainId);
           if (accounts[0]) {
             setCurrentAccount(accounts[0]);
+            setWalletType(constants.WALLET_CONNECT);
             handleClose();
           }
+        }
+      });
+
+      wProvider.onConnect((payload) => {
+        const { accounts, chainId } = payload;
+        console.log(accounts, chainId);
+        if (accounts[0]) {
+          setCurrentAccount(accounts[0]);
+          setWalletType(constants.WALLET_CONNECT);
+          handleClose();
         }
       });
 
@@ -79,8 +90,18 @@ const App = () => {
         console.log(accounts, chainId);
         if (accounts[0]) {
           setCurrentAccount(accounts[0]);
+          setWalletType(constants.WALLET_CONNECT);
         }
       });
+
+      wProvider
+        .onDisconnect()
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
 
       connector.on("disconnect", (error, payload) => {
         if (error) {
@@ -132,9 +153,17 @@ const App = () => {
     try {
       setIsLoading(true);
       const { ethereum } = window;
-      const provider = ethereum
-        ? new ethers.providers.Web3Provider(ethereum)
-        : ethers.getDefaultProvider(NETWORK);
+      let provider = null;
+      if (ethereum) {
+        provider = new ethers.providers.Web3Provider(ethereum);
+      } else {
+        if (!wProviderEnabled) {
+          await wProvider.enable();
+        } else {
+          setWProviderEnabled(true);
+        }
+        provider = new ethers.providers.Web3Provider(wProvider);
+      }
       const connectedContract = new ethers.Contract(
         CONTRACT_ADDRESS,
         theBillboard.abi,
@@ -154,7 +183,7 @@ const App = () => {
       });
       setFormData({ ...formData, price: ethers.BigNumber.from(price).add(1) });
     } catch (error) {
-      console.log(error);
+      console.log("error", error);
     } finally {
       setIsLoading(false);
     }
@@ -164,9 +193,17 @@ const App = () => {
   const getPastBillboards = useCallback(async () => {
     try {
       const { ethereum } = window;
-      const provider = ethereum
-        ? new ethers.providers.Web3Provider(ethereum)
-        : ethers.getDefaultProvider(NETWORK);
+      let provider = null;
+      if (ethereum) {
+        provider = new ethers.providers.Web3Provider(ethereum);
+      } else {
+        if (!wProviderEnabled) {
+          await wProvider.enable();
+        } else {
+          setWProviderEnabled(true);
+        }
+        provider = new ethers.providers.Web3Provider(wProvider);
+      }
       const connectedContract = new ethers.Contract(
         CONTRACT_ADDRESS,
         theBillboard.abi,
@@ -176,7 +213,7 @@ const App = () => {
       // Saving past texts
       let eventFilter = connectedContract.filters.BillboardUpdated();
       let events = await connectedContract.queryFilter(eventFilter);
-
+      console.log(events);
       const latestEvent = events[events.length - 1];
       getCurrentBillboard(latestEvent);
 
@@ -193,9 +230,9 @@ const App = () => {
         ]);
       });
     } catch (error) {
-      console.log(error);
+      console.log("error", error);
     }
-  }, [getCurrentBillboard]);
+  }, [getCurrentBillboard, wProviderEnabled]);
 
   /*
    * Implement your connectWallet method here
@@ -227,9 +264,19 @@ const App = () => {
       try {
         const { ethereum } = window;
 
-        const provider = ethereum
-          ? new ethers.providers.Web3Provider(ethereum)
-          : ethers.getDefaultProvider(NETWORK);
+        let provider = null;
+        if (ethereum) {
+          provider = new ethers.providers.Web3Provider(ethereum);
+        } else {
+          if (!wProviderEnabled) {
+            console.log(wProviderEnabled);
+            await wProvider.enable();
+          } else {
+            console.log(wProviderEnabled);
+            setWProviderEnabled(true);
+          }
+          provider = new ethers.providers.Web3Provider(wProvider);
+        }
 
         const connectedContract = new ethers.Contract(
           CONTRACT_ADDRESS,
@@ -239,6 +286,7 @@ const App = () => {
 
         connectedContract.on("BillboardUpdated", () => {
           setPastBillboards([]);
+          console.log("getting billboard");
           getPastBillboards();
         });
 
@@ -250,6 +298,7 @@ const App = () => {
 
     checkIfWalletIsConnected();
     setupEventListener();
+    console.log("getting billboard");
     getPastBillboards();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -318,9 +367,7 @@ const App = () => {
   };
 
   const renderForm = () => {
-    const { ethereum } = window;
     if (
-      ethereum &&
       currentBillboard &&
       currentBillboard.price &&
       formData &&
@@ -408,28 +455,34 @@ const App = () => {
       setIsUpdating(true);
       const { ethereum } = window;
 
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const connectedContract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          theBillboard.abi,
-          signer
-        );
-
-        console.log("Going to pop wallet now to pay gas...");
-        let nftTxn = await connectedContract.updateBillboard(
-          formData && formData.firstLine ? formData.firstLine : "",
-          formData && formData.secondLine ? formData.secondLine : "",
-          formData && formData.thirdLine ? formData.thirdLine : "",
-          { value: formData.price }
-        );
-
-        console.log("Mining...please wait.");
-        await nftTxn.wait();
+      let provider = null;
+      if (ethereum && walletType !== constants.WALLET_CONNECT) {
+        provider = new ethers.providers.Web3Provider(ethereum);
       } else {
-        console.log("Ethereum object doesn't exist!");
+        if (!wProviderEnabled) {
+          await wProvider.enable();
+        } else {
+          setWProviderEnabled(true);
+        }
+        provider = new ethers.providers.Web3Provider(wProvider);
       }
+      const signer = provider.getSigner();
+      const connectedContract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        theBillboard.abi,
+        signer
+      );
+
+      console.log("Going to pop wallet now to pay gas...");
+      let nftTxn = await connectedContract.updateBillboard(
+        formData && formData.firstLine ? formData.firstLine : "",
+        formData && formData.secondLine ? formData.secondLine : "",
+        formData && formData.thirdLine ? formData.thirdLine : "",
+        { value: formData.price }
+      );
+
+      console.log("Mining...please wait.");
+      await nftTxn.wait();
     } catch (error) {
       console.log(error);
       if (error.message) alert(error.message);
